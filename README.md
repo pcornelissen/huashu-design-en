@@ -23,7 +23,7 @@ Not "decent for AI" quality — it looks like a real design team made it. Give t
 **Every animation in this README was made by huashu-design itself.** No Figma, no After Effects — just a one-sentence prompt + skill run. Next product launch needs a promo video? Now you can make it too.
 
 ```
-npx skills add alchaincyf/huashu-design
+npx skills add pcornelissen/huashu-design-en
 ```
 
 Cross-agent compatible — Claude Code, Cursor, Codex, OpenClaw, Hermes all work.
@@ -49,7 +49,7 @@ Cross-agent compatible — Claude Code, Cursor, Codex, OpenClaw, Hermes all work
 ## Install
 
 ```bash
-npx skills add alchaincyf/huashu-design
+npx skills add pcornelissen/huashu-design-en
 ```
 
 Then just talk to Claude Code:

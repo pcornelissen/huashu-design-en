@@ -1,0 +1,10 @@
+{
+  "_comment": "Plain string replacements applied to every translated/copied file AFTER translation. Use for branding swaps that should survive every upstream sync. Order is preserved; replacements apply in iteration order. Do NOT replace upstream attribution links or release-asset URLs — those must keep pointing at upstream.",
+  "replacements": [
+    {
+      "find": "npx skills add alchaincyf/huashu-design",
+      "replace": "npx skills add pcornelissen/huashu-design-en",
+      "why": "Install command should reference this English mirror, not upstream."
+    }
+  ]
+}

@@ -31,9 +31,24 @@ If upstream hasn't moved, the script exits with "Already synced".
 | File | Purpose |
 |---|---|
 | `sync.py` | Pipeline implementation |
+| `build-cache.py` | One-shot tool to (re-)populate the cache from the current English files in this repo (use after manually editing translated content) |
 | `upstream-state.json` | Records `upstream_url` + `last_synced_sha` |
 | `translation-cache.json` | `sha256(upstream bytes) → english content` |
+| `replacements.json` | Plain-string substitutions applied to every file written by sync (e.g. swapping the install command to point at this mirror). Survives every upstream sync. |
 | `.upstream-clone/` | Local mirror of upstream (gitignored) |
+
+## Customizing translations
+
+If you hand-edit a translated file (e.g. tweak phrasing in `README.md`),
+run `python tools/sync-upstream/build-cache.py` afterwards to bake the edit
+into the cache. Otherwise the next sync will overwrite your edit with the
+old cached translation.
+
+## Re-applying replacements without an upstream change
+
+After editing `replacements.json`, run `python tools/sync-upstream/sync.py
+--force` — it will re-materialise every file with the new substitutions
+applied, even if upstream hasn't moved.
 
 ## Why no `git merge upstream`?
 

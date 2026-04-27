@@ -27,6 +27,7 @@ TRANSLATABLE_EXTS = {
     ".md", ".html", ".htm", ".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx",
     ".py", ".sh", ".json", ".css", ".svg", ".txt", ".yml", ".yaml",
 }
+TRANSLATABLE_FILENAMES = {".gitignore", ".gitattributes", ".editorconfig", "Dockerfile", "Makefile"}
 
 
 def run(cmd, cwd=None):
@@ -49,7 +50,9 @@ def main() -> int:
     files = run(["git", "ls-files"], cwd=CLONE).splitlines()
     for rel in files:
         src = CLONE / rel
-        if not src.is_file() or src.suffix.lower() not in TRANSLATABLE_EXTS:
+        if not src.is_file():
+            continue
+        if src.suffix.lower() not in TRANSLATABLE_EXTS and src.name not in TRANSLATABLE_FILENAMES:
             continue
         try:
             text = src.read_text(encoding="utf-8")

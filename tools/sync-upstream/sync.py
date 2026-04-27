@@ -30,12 +30,15 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 TOOLS_DIR = REPO_ROOT / "tools" / "sync-upstream"
 STATE_FILE = TOOLS_DIR / "upstream-state.json"
 CACHE_FILE = TOOLS_DIR / "translation-cache.json"
+REPLACEMENTS_FILE = TOOLS_DIR / "replacements.json"
 CLONE_DIR = TOOLS_DIR / ".upstream-clone"
 
 TRANSLATABLE_EXTS = {
     ".md", ".html", ".htm", ".js", ".mjs", ".cjs", ".jsx", ".ts", ".tsx",
     ".py", ".sh", ".json", ".css", ".svg", ".txt", ".yml", ".yaml",
 }
+# Extensionless files we still treat as text (config files with comments).
+TRANSLATABLE_FILENAMES = {".gitignore", ".gitattributes", ".editorconfig", "Dockerfile", "Makefile"}
 # Files that we never touch even if upstream has them — pipeline-internal paths.
 SKIP_PATHS = {"tools/sync-upstream", ".upstream-clone"}
 
@@ -109,14 +112,28 @@ def is_skipped(path: str) -> bool:
     return any(path == p or path.startswith(p + "/") for p in SKIP_PATHS)
 
 
+def load_replacements() -> list[tuple[str, str]]:
+    if not REPLACEMENTS_FILE.exists():
+        return []
+    data = json.loads(REPLACEMENTS_FILE.read_text(encoding="utf-8"))
+    return [(r["find"], r["replace"]) for r in data.get("replacements", [])]
+
+
+def apply_replacements(text: str, rules: list[tuple[str, str]]) -> str:
+    for find, replace in rules:
+        text = text.replace(find, replace)
+    return text
+
+
 def main() -> int:
+    force = "--force" in sys.argv
     state = load_json(STATE_FILE, {"upstream_url": "https://github.com/alchaincyf/huashu-design.git", "last_synced_sha": None})
     cache = load_json(CACHE_FILE, {})
 
     clone = ensure_clone(state["upstream_url"])
     new_sha = run(["git", "rev-parse", "HEAD"], cwd=clone).strip()
-    if state.get("last_synced_sha") == new_sha:
-        print(f"Already synced to {new_sha}. Nothing to do.")
+    if state.get("last_synced_sha") == new_sha and not force:
+        print(f"Already synced to {new_sha}. Nothing to do.  (use --force to re-materialise files, e.g. after editing replacements.json)")
         return 0
 
     upstream_files = set(list_upstream_files(clone))
@@ -136,7 +153,7 @@ def main() -> int:
             continue
         data = src.read_bytes()
         ext = src.suffix.lower()
-        if ext in TRANSLATABLE_EXTS:
+        if ext in TRANSLATABLE_EXTS or src.name in TRANSLATABLE_FILENAMES:
             try:
                 text = data.decode("utf-8")
             except UnicodeDecodeError:
@@ -166,6 +183,7 @@ def main() -> int:
             save_json(CACHE_FILE, cache)  # checkpoint after each, in case of crash
 
     # Pass 2: materialise files in repo.
+    rules = load_replacements()
     written = copied = removed = 0
     for rel in upstream_files:
         if is_skipped(rel):
@@ -177,7 +195,7 @@ def main() -> int:
         dst.parent.mkdir(parents=True, exist_ok=True)
         data = src.read_bytes()
         ext = src.suffix.lower()
-        if ext in TRANSLATABLE_EXTS:
+        if ext in TRANSLATABLE_EXTS or src.name in TRANSLATABLE_FILENAMES:
             try:
                 text = data.decode("utf-8")
             except UnicodeDecodeError:
@@ -185,10 +203,11 @@ def main() -> int:
                 copied += 1
                 continue
             if has_cjk(text):
-                dst.write_text(cache[file_hash(data)], encoding="utf-8")
+                content = cache[file_hash(data)]
+                dst.write_text(apply_replacements(content, rules), encoding="utf-8")
                 written += 1
             else:
-                dst.write_text(text, encoding="utf-8")
+                dst.write_text(apply_replacements(text, rules), encoding="utf-8")
                 copied += 1
         else:
             dst.write_bytes(data)

@@ -1,3 +1,5 @@
+> **English mirror.** This repository is a machine-translated, human-reviewed English version of [alchaincyf/huashu-design](https://github.com/alchaincyf/huashu-design). It is automatically synced from upstream — see [tools/sync-upstream](tools/sync-upstream/) for how that works. All credit, copyright, and authorship belong to the original author. The original "Personal Use Only" license applies unchanged — see [LICENSE](LICENSE).
+
 <div align="center">
 
 # Huashu Design
@@ -21,7 +23,7 @@ Not "decent for AI" quality — it looks like a real design team made it. Give t
 **Every animation in this README was made by huashu-design itself.** No Figma, no After Effects — just a sentence + skill run. Next product launch needs a promo video? You can make it too.
 
 ```
-npx skills add alchaincyf/huashu-design
+npx skills add pcornelissen/huashu-design-en
 ```
 
 [See it work](#demo-gallery) · [Install](#install) · [What it does](#what-it-does) · [How it works](#core-mechanics) · [vs. Claude Design](#vs-claude-design)
@@ -45,7 +47,7 @@ npx skills add alchaincyf/huashu-design
 ## Install
 
 ```bash
-npx skills add alchaincyf/huashu-design
+npx skills add pcornelissen/huashu-design-en
 ```
 
 Then just talk to Claude Code:
